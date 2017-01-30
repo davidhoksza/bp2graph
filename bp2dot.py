@@ -1,6 +1,12 @@
 import sys
 import gzip
 import argparse
+import re
+import logging
+
+def error_exit(message):
+    logging.error(message)
+    sys.exit()
 
 
 def open_file(file_name, mode="r"):
@@ -30,12 +36,26 @@ def read_recursively(sequence, bp, ix):
 
 
 def read_structure(f):
-    line = f.readline()
-    if line.startswith(">"):
-        line = f.readline()
+    lines = f.readlines()
 
-    sequence = line.strip()
-    dp = f.readline().strip()
+    ix_sequence = 0
+    if lines[0].startswith(">"):
+        ix_sequence = 1
+
+    ix_ss = 0
+    for ix in range(ix_sequence,len(lines)):
+        if re.search(r'[,\(\)]', lines[ix]):
+            ix_ss = ix
+            break
+
+    if ix_ss == 0:
+        error_exit("Secondary structure in the dot-bracket notation not found.")
+
+    sequence = re.sub(r'\s+', '', ''.join(lines[ix_sequence:ix_ss]))
+    dp = re.sub(r'\s+', '', ''.join(lines[ix_ss:]))
+
+    if len(sequence) != len(dp):
+        error_exit("Length of the sequence and secondary strucutres do not match.")
 
     return read_recursively(sequence, dp, 0)
 
@@ -88,5 +108,10 @@ if __name__ == '__main__':
                              "If non entered, the graph will be writen to the standard output.")
 
     args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s [%(levelname)s] %(module)s - %(message)s',
+        datefmt='%H:%M:%S')
 
     main()
