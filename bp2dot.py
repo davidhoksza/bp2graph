@@ -22,12 +22,18 @@ def read_recursively(sequence, bp, ix):
 
     structure = []
     while ix < len(bp):
+
+        label1 = sequence[ix]
+        if args.positions:
+            label1 = "{}{}".format(sequence[ix], ix+1)
         if bp[ix] == '.':
-            structure.append(sequence[ix])
+            structure.append(label1)
         elif bp[ix] == '(':
-            nt = sequence[ix]
             [ix, structure_in] = read_recursively(sequence, bp, ix+1)
-            structure.append([nt + sequence[ix], structure_in])
+            label2 = sequence[ix]
+            if args.positions:
+                label2 = "{}{}".format(sequence[ix], ix + 1)
+            structure.append([label1 + " - " + label2, structure_in])
         else:
             return [ix, structure]
         ix += 1
@@ -68,9 +74,9 @@ def write_recursively(s, f, id_parent="n", prefix=""):
         id_node = id_parent + "_" + str(seq)
         level_ids.append(id_node)
         if type(node) is list:
-            style = "label={} shape=rectangle style=rounded".format(node[0])
+            style = "label=\"{}\" shape=rectangle style=rounded".format(node[0])
         else:
-            style = "label={}".format(node)
+            style = "label=\"{}\"".format(node)
         f.write('{}{}[{}]\n'.format(prefix, id_node, style))
         if type(node) is list:
             write_recursively(node[1], f, id_node, prefix + "  ")
@@ -106,6 +112,9 @@ if __name__ == '__main__':
                         metavar='FILE',
                         help="Output file name for the dot file. "
                              "If non entered, the graph will be writen to the standard output.")
+    parser.add_argument("-p", "--positions",
+                        action='store_true',
+                        help="Includes positions of nucleotides in node labels when turned on.")
 
     args = parser.parse_args()
 
