@@ -24,7 +24,7 @@ To carry out the conversion, run:
 python bp2dot.py -i tests/structure.bp -o tests/structure.dot
 ```
 
-To get PDF with the graph, you need to have Graphviz installed and run:
+To get a PDF containing the graph, you need to have Graphviz installed and run:
 
 ```
 dot -Tpdf tests/structure.dot -o tests/structure.pdf
